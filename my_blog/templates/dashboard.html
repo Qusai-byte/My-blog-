@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}لوحة التحكم{% endblock %}
+
+{% block content %}
+<section class="dashboard">
+    <div class="dashboard-header">
+        <h1>لوحة التحكم</h1>
+        <p>مرحبًا {{ current_user.username }}، هذه نظرة عامة على حسابك</p>
+    </div>
+    
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="stat-content">
+                <h3>عدد المنشورات</h3>
+                <p>{{ current_user.posts|length }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-comments"></i>
+            </div>
+            <div class="stat-content">
+                <h3>عدد التعليقات</h3>
+                <p>{{ current_user.comments|length }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar"></i>
+            </div>
+            <div class="stat-content">
+                <h3>تاريخ التسجيل</h3>
+                <p>{{ current_user.created_at.strftime('%Y-%m-%d') }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="dashboard-sections">
+        <div class="recent-posts">
+            <h2 class="section-title">أحدث منشوراتك</h2>
+            {% if posts %}
+                <div class="posts-list">
+                    {% for post in posts %}
+                        <div class="post-item">
+                            {% if post.image %}
+                                <div class="post-thumb">
+                                    <img src="{{ url_for('static', filename='uploads/thumb_' + post.image) }}" alt="{{ post.title }}">
+                                </div>
+                            {% endif %}
+                            <div class="post-details">
+                                <h3><a href="{{ url_for('show_post', id=post.id) }}">{{ post.title }}</a></h3>
+                                <div class="post-meta">
+                                    <span><i class="far fa-calendar"></i> {{ post.created_at.strftime('%Y-%m-%d') }}</span>
+                                    <span><i class="far fa-comments"></i> {{ post.comments|length }} تعليق</span>
+                                </div>
+                            </div>
+                            <div class="post-actions">
+                                <a href="{{ url_for('edit_post', id=post.id) }}" class="btn-icon" title="تعديل">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{{ url_for('delete_post', id=post.id) }}" class="btn-icon" title="حذف"
+                                   onclick="return confirm('هل أنت متأكد من رغبتك في حذف هذا المنشور؟')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <a href="#" class="btn btn-outline btn-block">عرض جميع المنشورات</a>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-file-alt"></i>
+                    <p>لم تنشر أي منشورات بعد</p>
+                    <a href="{{ url_for('create_post') }}" class="btn btn-primary">إنشاء منشور جديد</a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="user-info">
+            <div class="profile-card">
+                <div class="profile-header">
+                    <img src="https://via.placeholder.com/100" alt="صورة المستخدم" class="profile-avatar">
+                    <h3>{{ current_user.username }}</h3>
+                    <p>{{ current_user.email }}</p>
+                </div>
+                <div class="profile-details">
+                    <div class="detail-item">
+                        <span>تاريخ التسجيل:</span>
+                        <span>{{ current_user.created_at.strftime('%Y-%m-%d') }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>عدد المنشورات:</span>
+                        <span>{{ current_user.posts|length }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>عدد التعليقات:</span>
+                        <span>{{ current_user.comments|length }}</span>
+                    </div>
+                </div>
+                <div class="profile-actions">
+                    <a href="#" class="btn btn-outline">تعديل الملف الشخصي</a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-danger">تسجيل الخروج</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

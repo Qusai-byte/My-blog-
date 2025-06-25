@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if category_name %}{{ category_name }} - {% endif %}الصفحة الرئيسية{% endblock %}
+
+{% block content %}
+{% if not category_name %}
+<section class="hero">
+    <div class="hero-content">
+        <h1>مدونة احترافية لنشر الأفكار</h1>
+        <p>استكشف أحدث المقالات في مجال التكنولوجيا والبرمجة وتطوير الويب</p>
+        <a href="{{ url_for('create_post') }}" class="btn btn-primary">ابدأ الكتابة</a>
+    </div>
+</section>
+{% endif %}
+
+<section class="featured-posts">
+    <h2 class="section-title">
+        {% if category_name %}
+            منشورات تصنيف "{{ category_name }}"
+        {% else %}
+            أحدث المنشورات
+        {% endif %}
+    </h2>
+    
+    {% if posts.items %}
+        <div class="posts-grid">
+            {% for post in posts.items %}
+                <div class="post-card">
+                    {% if post.image %}
+                        <div class="post-card-image">
+                            <img src="{{ url_for('static', filename='uploads/thumb_' + post.image) }}" alt="{{ post.title }}">
+                        </div>
+                    {% endif %}
+                    <div class="post-card-header">
+                        {% if post.category %}
+                            <span class="post-category">{{ post.category.name }}</span>
+                        {% endif %}
+                        <h3><a href="{{ url_for('show_post', id=post.id) }}">{{ post.title }}</a></h3>
+                        <div class="post-meta">
+                            <span><i class="far fa-user"></i> {{ post.author.username }}</span>
+                            <span><i class="far fa-calendar"></i> {{ post.created_at.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                    </div>
+                    <div class="post-card-content">
+                        <p>{{ post.content|striptags|truncate(150) }}</p>
+                    </div>
+                    <div class="post-card-actions">
+                        <a href="{{ url_for('show_post', id=post.id) }}" class="btn btn-outline">قراءة المزيد</a>
+                        {% if current_user == post.author or current_user.is_admin %}
+                            <div class="action-icons">
+                                <a href="{{ url_for('edit_post', id=post.id) }}" title="تعديل"><i class="fas fa-edit"></i></a>
+                                <a href="{{ url_for('delete_post', id=post.id) }}" title="حذف" 
+                                   onclick="return confirm('هل أنت متأكد من رغبتك في حذف هذا المنشور؟')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        <div class="pagination">
+            {% if posts.has_prev %}
+                <a href="{{ url_for('index', page=posts.prev_num) }}" class="btn btn-outline">
+                    <i class="fas fa-arrow-right"></i> السابق
+                </a>
+            {% endif %}
+            
+            {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                {% if page_num %}
+                    {% if posts.page == page_num %}
+                        <a href="{{ url_for('index', page=page_num) }}" class="btn btn-primary">{{ page_num }}</a>
+                    {% else %}
+                        <a href="{{ url_for('index', page=page_num) }}" class="btn btn-outline">{{ page_num }}</a>
+                    {% endif %}
+                {% else %}
+                    <span class="ellipsis">...</span>
+                {% endif %}
+            {% endfor %}
+            
+            {% if posts.has_next %}
+                <a href="{{ url_for('index', page=posts.next_num) }}" class="btn btn-outline">
+                    التالي <i class="fas fa-arrow-left"></i>
+                </a>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-file-alt"></i>
+            <h3>لا توجد منشورات بعد</h3>
+            <p>كن أول من ينشر مقالاً في هذه المدونة</p>
+            <a href="{{ url_for('create_post') }}" class="btn btn-primary">إنشاء منشور جديد</a>
+        </div>
+    {% endif %}
+</section>
+
+{% if not category_name %}
+<section class="categories-section">
+    <h2 class="section-title">التصنيفات</h2>
+    <div class="categories-grid">
+        {% for category in categories %}
+            <a href="{{ url_for('category_posts', name=category.name) }}" class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-folder"></i>
+                </div>
+                <h3>{{ category.name }}</h3>
+                <p>{{ category.posts|length }} منشور</p>
+            </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}
